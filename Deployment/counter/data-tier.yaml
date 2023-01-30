@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service # Jenis Object, disini kita membuat object Service
+metadata:
+  name: data-tier
+  labels:
+    app: microservices
+spec:
+  ports:
+  - port: 6379
+    protocol: TCP 
+    name: redis
+  selector:
+    tier: data 
+  type: ClusterIP
+--- # Untuk memisahkan objek lainnya
+apiVersion: apps/v1
+kind: Deployment # disini kita membuat object Deployment
+metadata:
+  name: data-tier
+  labels:
+    app: microservices
+    tier: data
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      tier: data
+  template:
+    metadata:
+      labels:
+        app: microservices
+        tier: data
+    spec:
+      containers:
+      - name: redis
+        image: redis:latest
+        imagePullPolicy: IfNotPresent # jika image tidak ada di local maka akan di unduh
+        ports:
+          - containerPort: 6379
